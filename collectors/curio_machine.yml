@@ -1,0 +1,45 @@
+collector_name: curio_machine
+min_interval: 5m
+
+metrics:
+  - metric_name: curio_machine_total_count
+    type: gauge
+    help: 'Total number of machines'
+    values: [total_count]
+    query: |
+      SELECT COUNT(*) AS total_count FROM harmony_machines
+
+  - metric_name: curio_machine_total_up
+    type: gauge
+    help: 'Total number of machines that are up'
+    values: [total_up]
+    query: |
+      SELECT COUNT(*) AS total_up FROM harmony_machines WHERE last_contact > NOW() - INTERVAL '5 minutes'
+
+  - metric_name: curio_machine_total_down
+    type: gauge
+    help: 'Total number of machines that are down'
+    values: [total_down]
+    query: |
+      SELECT COUNT(*) AS total_down FROM harmony_machines WHERE last_contact <= NOW() - INTERVAL '5 minutes'
+
+  - metric_name: curio_machine_total_cpu
+    type: gauge
+    help: 'Total number of CPUs'
+    values: [total_cpu]
+    query: |
+      SELECT SUM(cpu) AS total_cpu FROM harmony_machines
+
+  - metric_name: curio_machine_total_ram
+    type: gauge
+    help: 'Total amount of memory'
+    values: [total_ram]
+    query: |
+      SELECT SUM(ram) AS total_ram FROM harmony_machines
+
+  - metric_name: curio_machine_total_gpu
+    type: gauge
+    help: 'Total number of GPUs'
+    values: [total_gpu]
+    query: |
+      SELECT SUM(gpu) AS total_gpu FROM harmony_machines

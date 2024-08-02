@@ -1,0 +1,59 @@
+collector_name: curio_storage_path
+min_interval: 5m
+
+metrics:
+  - metric_name: curio_storage_path_total_count
+    type: gauge
+    help: 'Total number of storage paths'
+    values: [total_count]
+    query: |
+      SELECT COUNT(*) AS total_count FROM storage_path
+
+  - metric_name: curio_storage_path_total_capacity
+    type: gauge
+    help: 'Total capacity of storage paths'
+    values: [total_capacity]
+    query: |
+      SELECT SUM(capacity) AS total_capacity FROM storage_path
+
+  - metric_name: curio_storage_path_total_used
+    type: gauge
+    help: 'Total used space of storage paths'
+    values: [total_used]
+    query: |
+      SELECT SUM(used) AS total_used FROM storage_path
+
+  - metric_name: curio_storage_path_total_available
+    type: gauge
+    help: 'Total available space of storage paths'
+    values: [total_available]
+    query: |
+      SELECT SUM(available) AS total_available FROM storage_path
+
+  - metric_name: curio_storage_path_seal_total_capacity
+    type: gauge
+    help: 'Total capacity of seal type storage paths'
+    values: [total_capacity]
+    query: |
+      SELECT SUM(capacity) AS total_capacity FROM storage_path WHERE can_seal = true
+
+  - metric_name: curio_storage_path_seal_total_used
+    type: gauge
+    help: 'Total used space of seal type storage paths'
+    values: [total_used]
+    query: |
+      SELECT SUM(used) AS total_used FROM storage_path WHERE can_seal = true
+
+  - metric_name: curio_storage_path_seal_total_available
+    type: gauge
+    help: 'Total available space of seal type storage paths'
+    values: [total_available]
+    query: |
+      SELECT SUM(available) AS total_available FROM storage_path WHERE can_seal = true
+
+  - metric_name: curio_storage_path_seal_total_reserved
+    type: gauge
+    help: 'Total reserved space of seal type storage paths'
+    values: [total_reserved]
+    query: |
+      SELECT SUM(reserved) AS total_reserved FROM storage_path WHERE can_seal = true

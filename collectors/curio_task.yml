@@ -1,0 +1,10 @@
+collector_name: curio_task
+min_interval: 15s
+
+metrics:
+  - metric_name: curio_task_total_count
+    type: gauge
+    help: 'Total number of running tasks'
+    values: [total_count]
+    query: |
+      SELECT COUNT(*) AS total_count FROM harmony_task
