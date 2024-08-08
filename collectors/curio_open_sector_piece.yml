@@ -1,0 +1,16 @@
+collector_name: curio_open_sector_piece
+min_interval: 2m
+
+metrics:
+  - metric_name: curio_open_sector_piece_count
+    type: gauge
+    help: 'Total number of open sector pieces'
+    key_labels:
+      - sp_id
+      - sector_number
+      - is_snap
+    values: [total_count]
+    query: |
+      SELECT sp_id, sector_number, is_snap, COUNT(*) AS total_count
+      FROM open_sector_pieces
+      GROUP BY sp_id, sector_number, is_snap;

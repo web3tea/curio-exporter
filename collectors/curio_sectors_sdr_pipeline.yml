@@ -2,9 +2,14 @@ collector_name: curio_sectors_sdr_pipeline
 min_interval: 1m
 
 metrics:
-  - metric_name: curio_sectors_sdr_pipeline_total_count
+  - metric_name: curio_sectors_sdr_pipeline_count
     type: gauge
     help: 'Total number of sectors_sdr_pipeline'
+    key_labels:
+      - sp_id
+      - failed
     values: [total_count]
     query: |
-      SELECT COUNT(*) AS total_count FROM sectors_sdr_pipeline
+      SELECT sp_id, failed, COUNT(*) AS total_count 
+      FROM sectors_sdr_pipeline 
+      GROUP BY sp_id, failed;
