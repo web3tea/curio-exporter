@@ -1,0 +1,36 @@
+collector_name: curio_sectors_sdr_pipeline_count
+min_interval: 1m
+
+metrics:
+  - metric_name: curio_sectors_sdr_pipeline_count
+    type: gauge
+    help: "Count of sectors in SDR pipeline by status"
+    key_labels:
+      - status
+    values: [count]
+    query: |
+      WITH pipeline_status AS (
+        SELECT
+          CASE
+            WHEN failed = true THEN 'failed'
+            WHEN after_commit_msg_success = true THEN 'completed'
+            WHEN after_commit_msg = true AND after_commit_msg_success = false THEN 'awaiting_commit_msg_success'
+            WHEN after_porep = true AND after_commit_msg = false THEN 'awaiting_commit_msg'
+            WHEN after_tree_r = true AND after_porep = false THEN 'awaiting_porep'
+            WHEN after_tree_c = true AND after_tree_r = false THEN 'awaiting_tree_r'
+            WHEN after_tree_d = true AND after_tree_c = false THEN 'awaiting_tree_c'
+            WHEN after_synth = true AND after_tree_d = false THEN 'awaiting_tree_d'
+            WHEN after_sdr = true AND after_synth = false THEN 'awaiting_synth'
+            WHEN after_precommit_msg_success = true AND after_sdr = false THEN 'awaiting_sdr'
+            WHEN after_precommit_msg = true AND after_precommit_msg_success = false THEN 'awaiting_precommit_msg_success'
+            WHEN after_finalize = true AND after_precommit_msg = false THEN 'awaiting_precommit_msg'
+            WHEN after_move_storage = true AND after_finalize = false THEN 'awaiting_finalize'
+            ELSE 'awaiting_move_storage'
+          END AS status
+        FROM sectors_sdr_pipeline
+      )
+      SELECT
+        status,
+        COUNT(*) AS count
+      FROM pipeline_status
+      GROUP BY status;

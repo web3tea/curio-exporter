@@ -1,0 +1,18 @@
+collector_name: curio_harmony_task_latency_seconds
+min_interval: 5m
+
+metrics:
+  - metric_name: curio_harmony_task_latency_seconds
+    type: gauge
+    help: "Average delay time (in seconds) from task posting to execution for tasks completed in last minute"
+    values: [latency_seconds]
+    key_labels:
+      - task_name
+    query: |
+      SELECT
+        COALESCE(name, 'unknown') AS task_name,
+        AVG(EXTRACT(EPOCH FROM (work_start - posted))) AS latency_seconds
+      FROM harmony_task_history
+      WHERE
+        work_end > NOW() - INTERVAL '5 minute'
+      GROUP BY task_name;

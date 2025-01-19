@@ -1,0 +1,20 @@
+collector_name: curio_harmony_machines_count
+min_interval: 1m
+
+metrics:
+  - metric_name: curio_machines_count
+    type: gauge
+    help: "Total number of machines"
+    values: [total_count]
+    key_labels:
+      - status
+    query: |
+      SELECT
+        CASE
+          WHEN unschedulable = true THEN 'unschedulable'
+          WHEN last_contact > NOW() - INTERVAL '5 minutes' THEN 'online'
+          ELSE 'offline'
+        END AS status,
+        COUNT(*) AS total_count
+      FROM harmony_machines
+      GROUP BY status;

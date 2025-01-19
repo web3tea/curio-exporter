@@ -1,0 +1,10 @@
+collector_name: curio_alerts_count
+min_interval: 15s
+
+metrics:
+  - metric_name: curio_alerts_count
+    type: gauge
+    help: "Total number of alerts"
+    values: [total_count]
+    query: |
+      SELECT COUNT(*) AS total_count FROM alerts

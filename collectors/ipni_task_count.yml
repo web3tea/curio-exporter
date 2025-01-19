@@ -1,0 +1,36 @@
+collector_name: curio_ipni_task_count
+min_interval: 5m
+
+metrics:
+  - metric_name: curio_ipni_task_count
+    type: gauge
+    help: "Count of IPNI tasks by completion status and operation type"
+    values: [count]
+    key_labels:
+      - complete
+      - is_rm
+      - sp_id
+    query: |
+      SELECT
+        CAST(complete AS TEXT) AS complete,
+        CAST(is_rm AS TEXT) AS is_rm,
+        CAST(sp_id AS TEXT) AS sp_id,
+        COUNT(*) AS count
+      FROM ipni_task
+      GROUP BY complete, is_rm, sp_id;
+
+  - metric_name: curio_ipni_task_age_max
+    type: gauge
+    help: "Maximum age of incomplete IPNI tasks in seconds"
+    values: [age_seconds]
+    key_labels:
+      - is_rm
+      - sp_id
+    query: |
+      SELECT
+        CAST(is_rm AS TEXT) AS is_rm,
+        CAST(sp_id AS TEXT) AS sp_id,
+        EXTRACT(EPOCH FROM (NOW() - MIN(created_at))) AS age_seconds
+      FROM ipni_task
+      WHERE complete = false
+      GROUP BY is_rm, sp_id;

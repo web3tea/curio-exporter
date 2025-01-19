@@ -1,0 +1,30 @@
+collector_name: curio_sectors_snap_pipeline_count
+min_interval: 1m
+
+metrics:
+  - metric_name: curio_sectors_snap_pipeline_count
+    type: gauge
+    help: "Count of sectors in SNAP pipeline by status"
+    values: [count]
+    key_labels:
+      - status
+    query: |
+      WITH pipeline_status AS (
+        SELECT
+          CASE
+            WHEN failed = true THEN 'failed'
+            WHEN after_prove_msg_success = true THEN 'completed'
+            WHEN after_submit = true AND after_prove_msg_success = false THEN 'awaiting_prove_msg_success'
+            WHEN after_prove = true AND after_submit = false THEN 'awaiting_submit'
+            WHEN after_encode = true AND after_prove = false THEN 'awaiting_prove'
+            WHEN after_move_storage = true AND after_encode = false THEN 'awaiting_encode'
+            WHEN data_assigned = true AND after_move_storage = false THEN 'awaiting_move_storage'
+            ELSE 'awaiting_data_assignment'
+          END AS status
+        FROM sectors_snap_pipeline
+      )
+      SELECT
+        status,
+        COUNT(*) AS count
+      FROM pipeline_status
+      GROUP BY status;

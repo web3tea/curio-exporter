@@ -1,0 +1,30 @@
+collector_name: curio_market_mk12_deal_pipeline_count
+min_interval: 5m
+
+metrics:
+  - metric_name: curio_market_mk12_deal_pipeline_count
+    type: gauge
+    help: "Count of market MK12 deal pipeline stages"
+    values: [count]
+    key_labels:
+      - miner_id
+      - stage
+      - offline
+    query: |
+      SELECT
+        CAST(sp_id AS TEXT) AS miner_id,
+        CAST(offline AS TEXT) AS offline,
+        CASE
+          WHEN complete = true THEN 'complete'
+          WHEN sealed = true AND complete = false THEN 'sealed_awaiting_completion'
+          WHEN indexed = true AND sealed = false THEN 'indexed_awaiting_sealing'
+          WHEN should_index = true AND indexed = false THEN 'awaiting_indexing'
+          WHEN after_psd = true AND should_index = false THEN 'after_psd_no_indexing'
+          WHEN after_commp = true AND after_psd = false THEN 'awaiting_psd'
+          WHEN after_find_deal = true AND after_commp = false THEN 'awaiting_commp'
+          WHEN started = true AND after_find_deal = false THEN 'awaiting_find_deal'
+          ELSE 'not_started'
+        END AS stage,
+        COUNT(*) AS count
+      FROM market_mk12_deal_pipeline
+      GROUP BY sp_id, offline, stage;

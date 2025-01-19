@@ -1,0 +1,20 @@
+collector_name: curio_wdpost_recovery_tasks_count
+min_interval: 5m
+
+metrics:
+  - metric_name: curio_wdpost_recovery_tasks_count
+    type: gauge
+    help: "Count of WindowPoSt recovery tasks by miner ID, deadline, and partition"
+    values: [count]
+    key_labels:
+      - sp_id
+      - deadline_index
+      - partition_index
+    query: |
+      SELECT
+        CAST(sp_id AS TEXT) AS sp_id,
+        CAST(deadline_index AS TEXT) AS deadline_index,
+        CAST(partition_index AS TEXT) AS partition_index,
+        COUNT(*) AS count
+      FROM wdpost_recovery_tasks
+      GROUP BY sp_id, deadline_index, partition_index;

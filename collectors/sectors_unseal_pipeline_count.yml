@@ -1,0 +1,25 @@
+collector_name: curio_sectors_unseal_pipeline_count
+min_interval: 1m
+
+metrics:
+  - metric_name: curio_sectors_unseal_pipeline_count
+    type: gauge
+    help: "Count of sectors in Unseal pipeline by status"
+    values: [count]
+    key_labels:
+      - status
+    query: |
+      WITH pipeline_status AS (
+        SELECT
+          CASE
+            WHEN after_decode_sector = true THEN 'completed'
+            WHEN after_unseal_sdr = true AND after_decode_sector = false THEN 'awaiting_decode'
+            ELSE 'awaiting_unseal'
+          END AS status
+        FROM sectors_unseal_pipeline
+      )
+      SELECT
+        status,
+        COUNT(*) AS count
+      FROM pipeline_status
+      GROUP BY status;

@@ -1,0 +1,17 @@
+collector_name: curio_message_waits_count
+min_interval: 1m
+
+metrics:
+  - metric_name: curio_message_waits_count
+    type: gauge
+    help: "Count of message waits by waiter machine"
+    values: [count]
+    key_labels:
+      - waiter_machine
+    query: |
+      SELECT
+        hm.host_and_port AS waiter_machine,
+        COUNT(*) AS count
+      FROM message_waits mw
+      JOIN harmony_machines hm ON mw.waiter_machine_id = hm.id
+      GROUP BY hm.host_and_port;

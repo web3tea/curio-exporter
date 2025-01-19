@@ -1,0 +1,20 @@
+collector_name: curio_message_sends_count
+min_interval: 15m
+
+metrics:
+  - metric_name: curio_message_sends_count
+    type: gauge
+    help: "Count of message sends by success status"
+    values: [count]
+    key_labels:
+      - success
+    query: |
+      SELECT
+        CASE
+          WHEN send_success = true THEN 'true'
+          ELSE 'false'
+        END AS success,
+        COUNT(*) AS count
+      FROM message_sends
+      WHERE send_time > NOW() - INTERVAL '1 hours'
+      GROUP BY send_success;

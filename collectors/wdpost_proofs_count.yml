@@ -1,0 +1,42 @@
+collector_name: curio_wdpost_proofs_count
+min_interval: 5m
+
+metrics:
+  - metric_name: curio_wdpost_proofs_count
+    type: gauge
+    help: "Count of WindowPoSt proofs by miner ID, deadline, and partition"
+    values: [count]
+    key_labels:
+      - sp_id
+      - deadline
+      - partition
+    query: |
+      SELECT
+        CAST(sp_id AS TEXT) AS sp_id,
+        CAST(deadline AS TEXT) AS deadline,
+        CAST(partition AS TEXT) AS partition,
+        COUNT(*) AS count
+      FROM wdpost_proofs
+      GROUP BY sp_id, deadline, partition;
+
+  - metric_name: curio_wdpost_proofs_by_epoch
+    type: gauge
+    help: "Count of WindowPoSt proofs for current and future epochs by miner ID"
+    values: [count]
+    key_labels:
+      - sp_id
+      - epoch_range
+    query: |
+      WITH current_epoch AS (
+        SELECT MAX(submit_at_epoch) AS max_epoch FROM wdpost_proofs
+      )
+      SELECT
+        CAST(wp.sp_id AS TEXT) AS sp_id,
+        CASE
+          WHEN wp.submit_at_epoch = ce.max_epoch THEN 'current'
+          WHEN wp.submit_at_epoch > ce.max_epoch THEN 'future'
+          ELSE 'past'
+        END AS epoch_range,
+        COUNT(*) AS count
+      FROM wdpost_proofs wp, current_epoch ce
+      GROUP BY sp_id, epoch_range;

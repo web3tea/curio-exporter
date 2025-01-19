@@ -1,0 +1,32 @@
+collector_name: curio_harmony_task_error_rate
+min_interval: 1h
+
+metrics:
+  - metric_name: curio_harmony_task_error_rate
+    type: gauge
+    help: "Error rate of harmony tasks by name (failures / total executions)"
+    values: [error_rate]
+    key_labels:
+      - task_name
+      - host
+    query: |
+      WITH task_stats AS (
+        SELECT
+          COALESCE(name, 'unknown') AS task_name,
+          COALESCE(completed_by_host_and_port, 'unknown') AS host,
+          COUNT(*) AS total_executions,
+          SUM(CASE WHEN result = false THEN 1 ELSE 0 END) AS failed_executions
+        FROM harmony_task_history
+        WHERE
+          work_end > NOW() - INTERVAL '1 hour'
+        GROUP BY name, completed_by_host_and_port
+      )
+      SELECT
+        task_name,
+        host,
+        CASE
+          WHEN total_executions > 0 THEN
+            CAST(failed_executions AS FLOAT) / total_executions
+          ELSE 0
+        END AS error_rate
+      FROM task_stats;

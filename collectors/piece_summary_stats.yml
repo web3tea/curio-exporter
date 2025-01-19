@@ -1,0 +1,16 @@
+collector_name: curio_piece_summary_stats
+min_interval: 5m
+
+metrics:
+  - metric_name: curio_piece_summary_stats
+    type: gauge
+    help: "Summary statistics of pieces (total, announced, indexed)"
+    values: [count]
+    key_labels:
+      - type
+    query: |
+      SELECT 'total' AS type, total AS count FROM piece_summary
+      UNION ALL
+      SELECT 'announced' AS type, announced AS count FROM piece_summary
+      UNION ALL
+      SELECT 'indexed' AS type, indexed AS count FROM piece_summary;

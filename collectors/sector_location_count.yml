@@ -1,0 +1,20 @@
+collector_name: curio_sector_location_count
+min_interval: 1h
+
+metrics:
+  - metric_name: curio_sector_location_count
+    type: gauge
+    help: "Count of sector locations by miner ID and primary status"
+    values: [count]
+    key_labels:
+      - miner_id
+      - is_primary
+      - sector_filetype
+    query: |
+      SELECT
+        CAST(miner_id AS TEXT) AS miner_id,
+        CAST(is_primary AS TEXT) AS is_primary,
+        CAST(sector_filetype AS TEXT) AS sector_filetype,
+        COUNT(*) AS count
+      FROM sector_location
+      GROUP BY miner_id, is_primary, sector_filetype;

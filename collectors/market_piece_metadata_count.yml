@@ -1,0 +1,31 @@
+collector_name: curio_market_piece_metadata_count
+min_interval: 5m
+
+metrics:
+  - metric_name: curio_market_piece_metadata_count
+    type: gauge
+    help: "Count of market piece metadata by indexing status and version"
+    values: [count]
+    key_labels:
+      - indexed
+      - version
+    query: |
+      SELECT
+        CAST(indexed AS TEXT) AS indexed,
+        CAST(version AS TEXT) AS version,
+        COUNT(*) AS count
+      FROM market_piece_metadata
+      GROUP BY indexed, version;
+
+  - metric_name: curio_market_piece_metadata_size_total
+    type: gauge
+    help: "Total size of market pieces by indexing status"
+    values: [total_size]
+    key_labels:
+      - indexed
+    query: |
+      SELECT
+        CAST(indexed AS TEXT) AS indexed,
+        SUM(piece_size) AS total_size
+      FROM market_piece_metadata
+      GROUP BY indexed;

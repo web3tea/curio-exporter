@@ -1,0 +1,99 @@
+collector_name: curio_storage_path_metrics
+min_interval: 5m
+
+metrics:
+  - metric_name: curio_storage_path_capacity
+    type: gauge
+    help: "Total capacity of storage paths"
+    values: [capacity]
+    key_labels:
+      - storage_id
+      - can_seal
+      - can_store
+    query: |
+      SELECT
+        storage_id,
+        CAST(can_seal AS TEXT) as can_seal,
+        CAST(can_store AS TEXT) as can_store,
+        capacity
+      FROM storage_path;
+
+  - metric_name: curio_storage_path_available
+    type: gauge
+    help: "Available space in storage paths"
+    values: [available]
+    key_labels:
+      - storage_id
+      - can_seal
+      - can_store
+    query: |
+      SELECT
+        storage_id,
+        CAST(can_seal AS TEXT) as can_seal,
+        CAST(can_store AS TEXT) as can_store,
+        available
+      FROM storage_path;
+
+  - metric_name: curio_storage_path_fs_available
+    type: gauge
+    help: "Available space in file system for storage paths"
+    values: [fs_available]
+    key_labels:
+      - storage_id
+      - can_seal
+      - can_store
+    query: |
+      SELECT
+        storage_id,
+        CAST(can_seal AS TEXT) as can_seal,
+        CAST(can_store AS TEXT) as can_store,
+        fs_available
+      FROM storage_path;
+
+  - metric_name: curio_storage_path_used
+    type: gauge
+    help: "Used space in storage paths"
+    values: [used]
+    key_labels:
+      - storage_id
+      - can_seal
+      - can_store
+    query: |
+      SELECT
+        storage_id,
+        CAST(can_seal AS TEXT) as can_seal,
+        CAST(can_store AS TEXT) as can_store,
+        used
+      FROM storage_path;
+
+  - metric_name: curio_storage_path_reserved
+    type: gauge
+    help: "Reserved space in storage paths"
+    values: [reserved]
+    key_labels:
+      - storage_id
+      - can_seal
+      - can_store
+    query: |
+      SELECT
+        storage_id,
+        CAST(can_seal AS TEXT) as can_seal,
+        CAST(can_store AS TEXT) as can_store,
+        reserved
+      FROM storage_path;
+
+  - metric_name: curio_storage_path_max_storage
+    type: gauge
+    help: "Maximum storage capacity of storage paths"
+    values: [max_storage]
+    key_labels:
+      - storage_id
+      - can_seal
+      - can_store
+    query: |
+      SELECT
+        storage_id,
+        CAST(can_seal AS TEXT) as can_seal,
+        CAST(can_store AS TEXT) as can_store,
+        max_storage
+      FROM storage_path;

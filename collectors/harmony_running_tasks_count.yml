@@ -1,0 +1,16 @@
+collector_name: curio_harmony_running_tasks_count
+min_interval: 1m
+
+metrics:
+  - metric_name: curio_harmony_running_tasks_count
+    type: gauge
+    help: "Total number of running tasks"
+    values: [total_count]
+    key_labels:
+      - task_name
+    query: |
+      SELECT
+          COALESCE(name, 'unknown') AS task_name,
+          COUNT(*) AS total_count
+        FROM harmony_task
+        GROUP BY task_name;

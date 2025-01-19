@@ -1,0 +1,58 @@
+collector_name: curio_mining_tasks_count
+min_interval: 15m
+
+metrics:
+  - metric_name: curio_mining_tasks_count
+    type: gauge
+    help: "Count of mining tasks by inclusion status, winning status, and miner ID"
+    values: [count]
+    key_labels:
+      - included
+      - won
+      - sp_id
+    query: |
+      SELECT
+        CAST(included AS TEXT) AS included,
+        CAST(won AS TEXT) AS won,
+        CAST(sp_id AS TEXT) AS sp_id,
+        COUNT(*) AS count
+      FROM mining_tasks
+      WHERE mined_at > NOW() - INTERVAL '24 hours'
+      GROUP BY included, won, sp_id;
+
+  - metric_name: curio_mining_tasks_success_rate
+    type: gauge
+    help: "Success rate of mining tasks (included tasks / total tasks) by miner ID"
+    values: [success_rate]
+    key_labels:
+      - sp_id
+    query: |
+      SELECT
+        CAST(sp_id AS TEXT) AS sp_id,
+        CASE
+          WHEN COUNT(*) > 0 THEN
+            CAST(SUM(CASE WHEN included = true THEN 1 ELSE 0 END) AS FLOAT) / COUNT(*)
+          ELSE 0
+        END AS success_rate
+      FROM mining_tasks
+      WHERE mined_at > NOW() - INTERVAL '24 hours'
+      GROUP BY sp_id;
+
+  - metric_name: curio_mining_tasks_win_rate
+    type: gauge
+    help: "Win rate of mining tasks (won tasks / included tasks) by miner ID"
+    values: [win_rate]
+    key_labels:
+      - sp_id
+    query: |
+      SELECT
+        CAST(sp_id AS TEXT) AS sp_id,
+        CASE
+          WHEN SUM(CASE WHEN included = true THEN 1 ELSE 0 END) > 0 THEN
+            CAST(SUM(CASE WHEN won = true THEN 1 ELSE 0 END) AS FLOAT) /
+            SUM(CASE WHEN included = true THEN 1 ELSE 0 END)
+          ELSE 0
+        END AS win_rate
+      FROM mining_tasks
+      WHERE mined_at > NOW() - INTERVAL '24 hours'
+      GROUP BY sp_id;
