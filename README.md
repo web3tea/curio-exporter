@@ -5,7 +5,7 @@ All collectors can be found in the `collectors` directory.
 ## Usage
 
 ```shell
-git clone https://github.com/strahe/curio-exporter.git
+git clone https://github.com/web3tea/curio-exporter.git
 
 cd curio-exporter
 
