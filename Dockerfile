@@ -1,5 +1,5 @@
 FROM alpine:3
-LABEL authors="strahe"
+LABEL authors="web3tea"
 
 WORKDIR /app
 RUN apk add --no-cache curl
