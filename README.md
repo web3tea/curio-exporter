@@ -1,7 +1,8 @@
 # curio-exporter
-Prometheus exporter for curio cluster metrics.
 
-All collectors can be found in the `collectors` directory.
+Exporter for transforming Curio cluster data into Prometheus metrics format, enabling real-time monitoring and visualization of key Curio metrics in dashboarding tools like Grafana. This tool helps bridge the gap between Curio's internal data structures and modern observability platforms.
+
+All collectors can be found in the [collectors](/collectors) directory.
 ## Usage
 
 ```shell
@@ -20,8 +21,60 @@ docker compose up -d
 # Access http://localhost:9090 for prometheus
 ```
 
-## Screenshots
+## Available Metrics
 
-![metrics](metrics.png)
+### Alerts
+- `curio_alerts_count` (gauge) - Total number of alerts
 
-![prometheus](prometheus.png)
+### Harmony Machines
+- `curio_machines_count` (gauge) - Total number of machines (by status: online/offline/unschedulable)
+- `curio_machines_total_cpu` (gauge) - Total CPU resources (by status)
+- `curio_machines_total_gpu` (gauge) - Total GPU resources (by status)
+- `curio_machines_total_ram` (gauge) - Total RAM resources (by status)
+
+### Harmony Tasks
+- `curio_harmony_running_tasks_count` (gauge) - Total number of running tasks (by task_name)
+- `curio_harmony_task_error_rate` (gauge) - Error rate of harmony tasks (failures / total executions)
+- `curio_harmony_task_latency_seconds` (gauge) - Average delay time from task posting to execution
+
+### IPNI
+- `curio_ipni_task_count` (gauge) - Count of IPNI tasks by completion status and operation type
+- `curio_ipni_task_age_max` (gauge) - Maximum age of incomplete IPNI tasks in seconds
+
+### Market MK12
+- `curio_market_mk12_deal_pipeline_count` (gauge) - Count of market MK12 deal pipeline stages
+- `curio_market_mk12_deals_count` (gauge) - Count of market MK12 deals by different dimensions
+
+### Market Pieces
+- `curio_market_piece_metadata_count` (gauge) - Count of market piece metadata by indexing status and version
+- `curio_market_piece_metadata_size_total` (gauge) - Total size of market pieces by indexing status
+- `curio_piece_summary_stats` (gauge) - Summary statistics of pieces (total, announced, indexed)
+
+### Messages
+- `curio_message_sends_count` (gauge) - Count of message sends by success status
+- `curio_message_waits_count` (gauge) - Count of message waits by waiter machine
+
+### Mining
+- `curio_mining_tasks_count` (gauge) - Count of mining tasks by inclusion status, winning status, and miner ID
+- `curio_mining_tasks_success_rate` (gauge) - Success rate of mining tasks (included tasks / total tasks)
+- `curio_mining_tasks_win_rate` (gauge) - Win rate of mining tasks (won tasks / included tasks)
+
+### Sector Management
+- `curio_sector_location_count` (gauge) - Count of sector locations by miner ID and primary status
+- `curio_sectors_sdr_pipeline_count` (gauge) - Count of sectors in SDR pipeline by status
+- `curio_sectors_snap_pipeline_count` (gauge) - Count of sectors in SNAP pipeline by status
+- `curio_sectors_unseal_pipeline_count` (gauge) - Count of sectors in Unseal pipeline by status
+
+### Storage
+- `curio_storage_path_capacity` (gauge) - Total capacity of storage paths
+- `curio_storage_path_available` (gauge) - Available space in storage paths
+- `curio_storage_path_fs_available` (gauge) - Available space in file system for storage paths
+- `curio_storage_path_used` (gauge) - Used space in storage paths
+- `curio_storage_path_reserved` (gauge) - Reserved space in storage paths
+- `curio_storage_path_max_storage` (gauge) - Maximum storage capacity of storage paths
+- `curio_storage_removal_marks_count` (gauge) - Count of storage removal marks by miner ID and approval status
+
+### WindowPoSt
+- `curio_wdpost_proofs_count` (gauge) - Count of WindowPoSt proofs by miner ID, deadline, and partition
+- `curio_wdpost_proofs_by_epoch` (gauge) - Count of WindowPoSt proofs for current and future epochs
+- `curio_wdpost_recovery_tasks_count` (gauge) - Count of WindowPoSt recovery tasks
