@@ -10,7 +10,7 @@ services:
       - ${PWD}/collectors:/app/collectors
       - ${PWD}/sql_exporter.yml:/app/sql_exporter.yml
     environment:
-      - SQL_EXPORTER_VERSION=0.15.0
+      - SQL_EXPORTER_VERSION=0.17.3
 
   prometheus:
     image: prom/prometheus
