@@ -54,6 +54,24 @@ docker compose up -d
 - `curio_message_sends_count` (gauge) - Count of message sends by success status
 - `curio_message_waits_count` (gauge) - Count of message waits by waiter machine
 
+### Ethereum Messages
+- `curio_message_sends_eth_count` (gauge) - Count of Ethereum message sends by success status
+- `curio_message_sends_eth_error_rate` (gauge) - Error rate of Ethereum message sends by from address
+- `curio_message_sends_eth_by_reason` (gauge) - Count of Ethereum message sends by send reason
+- `curio_message_sends_eth_nonce_max` (gauge) - Maximum nonce used by from address
+- `curio_message_sends_eth_recent_failures` (gauge) - Count of recent Ethereum message send failures by error type
+- `curio_message_waits_eth_count` (gauge) - Count of Ethereum message waits by transaction status and success
+- `curio_message_waits_eth_success_rate` (gauge) - Success rate of Ethereum message waits by waiter machine
+- `curio_message_waits_eth_block_number_latest` (gauge) - Latest confirmed block number by waiter machine
+- `curio_message_waits_eth_by_status` (gauge) - Count of Ethereum message waits by transaction status
+- `curio_message_waits_eth_machine_distribution` (gauge) - Distribution of Ethereum message waits across machines
+- `curio_message_waits_eth_hash_matches` (gauge) - Count of Ethereum message waits with matching/non-matching transaction hashes
+- `curio_message_send_eth_locks_count` (gauge) - Count of Ethereum message send locks by from address
+- `curio_message_send_eth_locks_active` (gauge) - Count of active Ethereum message send locks (currently claimed)
+- `curio_message_send_eth_locks_age_max` (gauge) - Maximum age of Ethereum message send locks in seconds
+- `curio_message_send_eth_locks_by_task` (gauge) - Count of Ethereum message send locks by task ID status
+- `curio_message_send_eth_locks_stale` (gauge) - Count of potentially stale Ethereum message send locks (older than 1 hour)
+
 ### Mining
 - `curio_mining_tasks_count` (gauge) - Count of mining tasks by inclusion status, winning status, and miner ID
 - `curio_mining_tasks_success_rate` (gauge) - Success rate of mining tasks (included tasks / total tasks)

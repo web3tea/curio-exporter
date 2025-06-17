@@ -1,0 +1,81 @@
+collector_name: curio_message_send_eth_locks_count
+min_interval: 1m
+
+metrics:
+  - metric_name: curio_message_send_eth_locks_count
+    type: gauge
+    help: "Count of Ethereum message send locks by from address"
+    values: [count]
+    key_labels:
+      - from_address
+    query: |
+      SELECT
+        COALESCE(from_address, 'unknown') AS from_address,
+        COUNT(*) AS count
+      FROM message_send_eth_locks
+      GROUP BY from_address;
+
+  - metric_name: curio_message_send_eth_locks_active
+    type: gauge
+    help: "Count of active Ethereum message send locks (currently claimed)"
+    values: [count]
+    key_labels:
+      - from_address
+      - lock_status
+    query: |
+      SELECT
+        COALESCE(from_address, 'unknown') AS from_address,
+        CASE
+          WHEN claimed_at IS NOT NULL THEN 'locked'
+          ELSE 'unlocked'
+        END AS lock_status,
+        COUNT(*) AS count
+      FROM message_send_eth_locks
+      GROUP BY from_address, lock_status;
+
+  - metric_name: curio_message_send_eth_locks_age_max
+    type: gauge
+    help: "Maximum age of Ethereum message send locks in seconds"
+    values: [age_seconds]
+    key_labels:
+      - from_address
+    query: |
+      SELECT
+        COALESCE(from_address, 'unknown') AS from_address,
+        EXTRACT(EPOCH FROM (NOW() - MIN(claimed_at))) AS age_seconds
+      FROM message_send_eth_locks
+      WHERE claimed_at IS NOT NULL
+      GROUP BY from_address;
+
+  - metric_name: curio_message_send_eth_locks_by_task
+    type: gauge
+    help: "Count of Ethereum message send locks by task ID status"
+    values: [count]
+    key_labels:
+      - from_address
+      - has_task_id
+    query: |
+      SELECT
+        COALESCE(from_address, 'unknown') AS from_address,
+        CASE
+          WHEN task_id IS NOT NULL THEN 'true'
+          ELSE 'false'
+        END AS has_task_id,
+        COUNT(*) AS count
+      FROM message_send_eth_locks
+      GROUP BY from_address, has_task_id;
+
+  - metric_name: curio_message_send_eth_locks_stale
+    type: gauge
+    help: "Count of potentially stale Ethereum message send locks (older than 1 hour)"
+    values: [count]
+    key_labels:
+      - from_address
+    query: |
+      SELECT
+        COALESCE(from_address, 'unknown') AS from_address,
+        COUNT(*) AS count
+      FROM message_send_eth_locks
+      WHERE claimed_at IS NOT NULL
+        AND claimed_at < NOW() - INTERVAL '1 hour'
+      GROUP BY from_address;

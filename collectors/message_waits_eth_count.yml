@@ -1,0 +1,99 @@
+collector_name: curio_message_waits_eth_count
+min_interval: 1m
+
+metrics:
+  - metric_name: curio_message_waits_eth_count
+    type: gauge
+    help: "Count of Ethereum message waits by transaction status and success"
+    values: [count]
+    key_labels:
+      - tx_status
+      - tx_success
+      - waiter_machine
+    query: |
+      SELECT
+        COALESCE(tx_status, 'unknown') AS tx_status,
+        CAST(tx_success AS TEXT) AS tx_success,
+        hm.host_and_port AS waiter_machine,
+        COUNT(*) AS count
+      FROM message_waits_eth mwe
+      JOIN harmony_machines hm ON mwe.waiter_machine_id = hm.id
+      GROUP BY tx_status, tx_success, hm.host_and_port;
+
+  - metric_name: curio_message_waits_eth_success_rate
+    type: gauge
+    help: "Success rate of Ethereum message waits by waiter machine"
+    values: [success_rate]
+    key_labels:
+      - waiter_machine
+    query: |
+      SELECT
+        hm.host_and_port AS waiter_machine,
+        CASE
+          WHEN COUNT(*) > 0 THEN
+            CAST(SUM(CASE WHEN tx_success = true THEN 1 ELSE 0 END) AS FLOAT) / COUNT(*)
+          ELSE 0
+        END AS success_rate
+      FROM message_waits_eth mwe
+      JOIN harmony_machines hm ON mwe.waiter_machine_id = hm.id
+      GROUP BY hm.host_and_port;
+
+  - metric_name: curio_message_waits_eth_block_number_latest
+    type: gauge
+    help: "Latest confirmed block number by waiter machine"
+    values: [block_number]
+    key_labels:
+      - waiter_machine
+    query: |
+      SELECT
+        hm.host_and_port AS waiter_machine,
+        MAX(confirmed_block_number) AS block_number
+      FROM message_waits_eth mwe
+      JOIN harmony_machines hm ON mwe.waiter_machine_id = hm.id
+      GROUP BY hm.host_and_port;
+
+  - metric_name: curio_message_waits_eth_by_status
+    type: gauge
+    help: "Count of Ethereum message waits by transaction status"
+    values: [count]
+    key_labels:
+      - tx_status
+    query: |
+      SELECT
+        COALESCE(tx_status, 'unknown') AS tx_status,
+        COUNT(*) AS count
+      FROM message_waits_eth
+      GROUP BY tx_status;
+
+  - metric_name: curio_message_waits_eth_machine_distribution
+    type: gauge
+    help: "Distribution of Ethereum message waits across machines"
+    values: [count]
+    key_labels:
+      - waiter_machine
+      - tx_success
+    query: |
+      SELECT
+        hm.host_and_port AS waiter_machine,
+        CAST(mwe.tx_success AS TEXT) AS tx_success,
+        COUNT(*) AS count
+      FROM message_waits_eth mwe
+      JOIN harmony_machines hm ON mwe.waiter_machine_id = hm.id
+      GROUP BY hm.host_and_port, mwe.tx_success;
+
+  - metric_name: curio_message_waits_eth_hash_matches
+    type: gauge
+    help: "Count of Ethereum message waits with matching/non-matching transaction hashes"
+    values: [count]
+    key_labels:
+      - hash_match
+    query: |
+      SELECT
+        CASE
+          WHEN signed_tx_hash = confirmed_tx_hash THEN 'true'
+          WHEN signed_tx_hash IS NULL OR confirmed_tx_hash IS NULL THEN 'unknown'
+          ELSE 'false'
+        END AS hash_match,
+        COUNT(*) AS count
+      FROM message_waits_eth
+      GROUP BY hash_match;

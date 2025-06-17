@@ -1,0 +1,92 @@
+collector_name: curio_message_sends_eth_count
+min_interval: 15m
+
+metrics:
+  - metric_name: curio_message_sends_eth_count
+    type: gauge
+    help: "Count of Ethereum message sends by success status"
+    values: [count]
+    key_labels:
+      - success
+      - from_address
+    query: |
+      SELECT
+        CASE
+          WHEN send_success = true THEN 'true'
+          ELSE 'false'
+        END AS success,
+        COALESCE(from_address, 'unknown') AS from_address,
+        COUNT(*) AS count
+      FROM message_sends_eth
+      WHERE send_time > NOW() - INTERVAL '1 hours'
+      GROUP BY send_success, from_address;
+
+  - metric_name: curio_message_sends_eth_error_rate
+    type: gauge
+    help: "Error rate of Ethereum message sends by from address"
+    values: [error_rate]
+    key_labels:
+      - from_address
+    query: |
+      SELECT
+        COALESCE(from_address, 'unknown') AS from_address,
+        CASE
+          WHEN COUNT(*) > 0 THEN
+            CAST(SUM(CASE WHEN send_success = false THEN 1 ELSE 0 END) AS FLOAT) / COUNT(*)
+          ELSE 0
+        END AS error_rate
+      FROM message_sends_eth
+      WHERE send_time > NOW() - INTERVAL '1 hours'
+      GROUP BY from_address;
+
+  - metric_name: curio_message_sends_eth_by_reason
+    type: gauge
+    help: "Count of Ethereum message sends by send reason"
+    values: [count]
+    key_labels:
+      - send_reason
+      - success
+    query: |
+      SELECT
+        COALESCE(send_reason, 'unknown') AS send_reason,
+        CASE
+          WHEN send_success = true THEN 'true'
+          ELSE 'false'
+        END AS success,
+        COUNT(*) AS count
+      FROM message_sends_eth
+      WHERE send_time > NOW() - INTERVAL '6 hours'
+      GROUP BY send_reason, send_success;
+
+  - metric_name: curio_message_sends_eth_nonce_max
+    type: gauge
+    help: "Maximum nonce used by from address"
+    values: [max_nonce]
+    key_labels:
+      - from_address
+    query: |
+      SELECT
+        COALESCE(from_address, 'unknown') AS from_address,
+        MAX(nonce) AS max_nonce
+      FROM message_sends_eth
+      GROUP BY from_address;
+
+  - metric_name: curio_message_sends_eth_recent_failures
+    type: gauge
+    help: "Count of recent Ethereum message send failures by error type"
+    values: [count]
+    key_labels:
+      - from_address
+      - has_error
+    query: |
+      SELECT
+        COALESCE(from_address, 'unknown') AS from_address,
+        CASE
+          WHEN send_error != '' THEN 'true'
+          ELSE 'false'
+        END AS has_error,
+        COUNT(*) AS count
+      FROM message_sends_eth
+      WHERE send_time > NOW() - INTERVAL '30 minutes'
+        AND send_success = false
+      GROUP BY from_address, has_error;
